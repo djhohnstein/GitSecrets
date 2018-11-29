@@ -294,7 +294,7 @@ def trufflehog_user(base_url, user, session):
     user_url = base_url + user
     print_info("Fetching user repositories from: {}".format(user_url))
     repo_url = user_url + "?tab=repositories"
-    r = s.get(repo_url)
+    r = session.get(repo_url)
     soup = BeautifulSoup(r.content, 'html.parser')
     repo_list = soup.find("div", {"class": "org-repos repo-list"})
 
@@ -314,7 +314,7 @@ def trufflehog_user(base_url, user, session):
     global max_threads, cur_threads
     print_info("Number of repository pages: {}".format(num_pages))
     for i in range(1, num_pages+1):
-        r = s.get(repo_url + "&page={}".format(i))
+        r = session.get(repo_url + "&page={}".format(i))
         soup = BeautifulSoup(r.content, 'html.parser')
         hrefs = parse_repo_links(soup, user_url)
         for href in hrefs:
