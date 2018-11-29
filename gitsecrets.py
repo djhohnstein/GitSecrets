@@ -48,6 +48,7 @@ def parse_repo_links(soup, base_url, ssh=False):
         clone_url = base_url
         if clone_url[-1] != "/":
             clone_url += "/"
+        clone_url += "{}"
     hrefs = [clone_url.format(x.get("href")[1:]) for x in soup.findAll("a", {"itemprop": "name codeRepository"})]
     return(hrefs)
 
@@ -328,7 +329,7 @@ def trufflehog_user(base_url, user, session, ssh=False):
     for i in range(1, num_pages+1):
         r = session.get(repo_url + "&page={}".format(i))
         soup = BeautifulSoup(r.content, 'html.parser')
-        hrefs = parse_repo_links(soup, user_url, ssh)
+        hrefs = parse_repo_links(soup, base_url, ssh)
         for href in hrefs:
             while True:
                 if cur_threads < max_threads:
