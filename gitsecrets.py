@@ -31,7 +31,7 @@ def print_error(content, color="red"):
 def print_debug(content, color="blue"):
     print(colored("[DEBUG] {}".format(content), color))
 
-def parse_repo_links(soup, base_url):
+def parse_repo_links(soup, base_url, ssh=False):
     """
     Return all hyperlinks to repositories on a github page.
 
@@ -41,8 +41,14 @@ def parse_repo_links(soup, base_url):
 
     domain = base_url.split("/")[2]
     # for d in repo_list:
-    ssh_url = "git@{}:{}"
-    hrefs = [ssh_url.format(domain, x.get("href")[1:]) for x in soup.findAll("a", {"itemprop": "name codeRepository"})]
+    if ssh:
+        clone_url = "git@{}".format(domain)
+        clone_url += ":{}"
+    else:
+        clone_url = base_url
+        if clone_url[-1] != "/":
+            clone_url += "/"
+    hrefs = [clone_url.format(x.get("href")[1:]) for x in soup.findAll("a", {"itemprop": "name codeRepository"})]
     return(hrefs)
 
 def find_local_repos():
@@ -296,7 +302,7 @@ def build_url(base_url, query):
     # print(colored("[DEBUG] Built search url: {}".format(url), "blue"))
     return base_url + path
 
-def trufflehog_user(base_url, user, session):
+def trufflehog_user(base_url, user, session, ssh=False):
     user_url = base_url + "/" + user
     print_info("Fetching user repositories from: {}".format(user_url))
     repo_url = user_url + "?tab=repositories"
@@ -322,7 +328,7 @@ def trufflehog_user(base_url, user, session):
     for i in range(1, num_pages+1):
         r = session.get(repo_url + "&page={}".format(i))
         soup = BeautifulSoup(r.content, 'html.parser')
-        hrefs = parse_repo_links(soup, user_url)
+        hrefs = parse_repo_links(soup, user_url, ssh)
         for href in hrefs:
             while True:
                 if cur_threads < max_threads:
@@ -401,6 +407,7 @@ def main():
     parser.add_option("-c", "--cookies", dest="cookies", default="", help="Cookies file in JSON format.")
     parser.add_option("-u", "--user", dest="github_user", default="", help="User of repositories you wish to clone and run trufflehog on.")
     parser.add_option("-s", "--search", dest="search", default="all", help="Comma separated list of search terms from regexes.py to search for. By default, searches all. Otherwise, can be one or more of: {}".format(", ".join([x['search_term'] for x in queries])))
+    parser.add_option("--ssh", default=False, action="store_true", help="If -u or --user is passed, will clone repositories over ssh instead of https.") 
     parser.add_option("-o", "--outfile", dest="outfile", default="search_results.txt", help="Outfile to write search results to. This is not used when -u is passed. Default is \"search_results.txt\"")
     (options, args) = parser.parse_args()
     
@@ -424,7 +431,7 @@ def main():
     # Github crawling.
     if options.github_user:
         # Do the truffleHog dance.
-        trufflehog_user(base_url, options.github_user, s)
+        trufflehog_user(base_url, options.github_user, s, options.ssh)
     else:
         # Validate the search terms.
         if options.search == "all":
