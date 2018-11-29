@@ -25,6 +25,80 @@ def print_error(content, color="red"):
 def print_debug(content, color="blue"):
     print(colored("[DEBUG] {}".format(content), color))
 
+def parse_repo_links(soup, base_url):
+    """
+    Return all hyperlinks to repositories on a github page.
+
+    :param soup: BeautifulSoup object of a page on a user repository.
+    :return: Links.
+    """
+
+    domain = base_url.split("/")[2]
+    # for d in repo_list:
+    ssh_url = "git@{}:{}"
+    hrefs = [ssh_url.format(domain, x.get("href")[1:]) for x in soup.findAll("a", {"itemprop": "name codeRepository"})]
+    return(hrefs)
+
+def find_local_repos():
+    """
+
+    :return: List of file paths to git directories.
+    """
+    d = '.'
+    dir_path = os.path.realpath(d)
+    # print("Dir path: {}".format(dir_path))
+    partial_git_dirs = [os.path.join(d, o)[1:] for o in os.listdir(d) if os.path.isdir(os.path.join(d, o)) and ".git" in os.listdir(os.path.join(d,o))]
+    # print("Partial git dirs: {}".format(partial_git_dirs))
+    git_dirs = [dir_path + x for x in partial_git_dirs]
+    return git_dirs
+
+def git_clone(href):
+    global cur_threads
+    if href[-4:] != ".git":
+        href += ".git"
+    try:
+        with open("/dev/null","w") as devnull:
+            subprocess.run(["git","clone",href], stdout=devnull, stderr=devnull)
+            print("[+] Cloned {} sucessfully.".format(href))
+    except subprocess.CalledProcessError:
+        print("[-] Failed to clone repository at: {}".format(href))
+    cur_threads -= 1
+
+def trufflehog(repo, outdir):
+    """
+    Runs trufflehog on a list of git repositories.
+
+    :param repos: List of filepaths to git directories.
+    :return: None
+    """
+    if outdir[-1] != "/":
+        outdir += "/"
+
+    repo_name = repo.split("/")[-1]
+    try:
+        cmd = subprocess.run(["trufflehog", "file://{}".format(repo)], stdout=subprocess.PIPE)
+        outfile = outdir + repo_name + ".trufflehog"
+        with open(outfile, 'wb') as f:
+            f.write(cmd.stdout)
+        print("[+] Analyzed repo: {}".format(repo_name))
+    except Exception as e:
+        print("Error in running trufflehog. Reason: {}".format(e))
+    global cur_threads
+    cur_threads -= 1
+
+def del_repos(repos):
+    """
+    Remove a list of directories.
+    :param repos: List of directory strings.
+    :return: None
+    """
+    for repo in repos:
+        try:
+            subprocess.run(["rm", "-rf", repo])
+        except subprocess.CalledProcessError:
+            print("[!] Could not delete repo: {}".format(repo))
+
+
 def parse_cookie_file(filepath):
     """
     Creates a requests.cookies.RequestsCookieJar based
@@ -270,7 +344,7 @@ def trufflehog_user(base_url, user, session):
 
 
 
-def crawl_github(base_url, session, regex_list=queries, results_file = ""):
+def crawl_github(base_url, session, query_list=queries, results_file = ""):
     """
     Crawl github for interesting things!
 
@@ -278,9 +352,9 @@ def crawl_github(base_url, session, regex_list=queries, results_file = ""):
     :param session  - requests.Session object to use for the reqeusts.
     :param results_file - string of file to write results to.
     """
-    results = {x['search_term']: [] for x in regex_list}
+    results = {x['search_term']: [] for x in query_list}
 
-    for query in regex_list:
+    for query in query_list:
         regex_term = build_regex(query)
         search_url = build_url(base_url, query)
         try:
@@ -305,10 +379,10 @@ def crawl_github(base_url, session, regex_list=queries, results_file = ""):
                     search_results = parse_code_page(query["search_term"], query["regex"], query['flags'], soup, base_url)
                     results[query["search_term"]] += search_results[query["search_term"]]
                 except Exception as e:
-                    print("Problem while iterating through search results: {}".format(e))
+                    print_error("Problem while iterating through search results: {}".format(e))
              
         except Exception as e:
-            print(colored("Problem occurred while cycling through regexes: {}".format(e))
+            print_error("Problem occurred while cycling through regexes: {}".format(e))
     # print(results)
     for k in results.keys():
         print_success("Found {} {}s".format(len(results[k]), k))
