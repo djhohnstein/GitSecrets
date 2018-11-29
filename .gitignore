@@ -1,0 +1,9 @@
+*.swp
+search_results.txt
+trufflehog*
+__pycache__
+*~
+*.html
+*.json
+*.swo
+*.pyc
