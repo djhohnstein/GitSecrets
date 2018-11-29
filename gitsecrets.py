@@ -1,4 +1,10 @@
+#!/usr/bin/env python
+
+import os
+import subprocess
+from time import sleep
 from termcolor import colored
+from threading import Thread
 from urllib.parse import urlencode
 import requests
 import json
@@ -59,9 +65,9 @@ def git_clone(href):
     try:
         with open("/dev/null","w") as devnull:
             subprocess.run(["git","clone",href], stdout=devnull, stderr=devnull)
-            print("[+] Cloned {} sucessfully.".format(href))
+            print_info("Cloned {} sucessfully.".format(href))
     except subprocess.CalledProcessError:
-        print("[-] Failed to clone repository at: {}".format(href))
+        print_error("Failed to clone repository at: {}".format(href))
     cur_threads -= 1
 
 def trufflehog(repo, outdir):
@@ -80,9 +86,9 @@ def trufflehog(repo, outdir):
         outfile = outdir + repo_name + ".trufflehog"
         with open(outfile, 'wb') as f:
             f.write(cmd.stdout)
-        print("[+] Analyzed repo: {}".format(repo_name))
+        print_success("Analyzed repo: {}".format(repo_name))
     except Exception as e:
-        print("Error in running trufflehog. Reason: {}".format(e))
+        print_error("Error in running trufflehog. Reason: {}".format(e))
     global cur_threads
     cur_threads -= 1
 
@@ -291,7 +297,7 @@ def build_url(base_url, query):
     return base_url + path
 
 def trufflehog_user(base_url, user, session):
-    user_url = base_url + user
+    user_url = base_url + "/" + user
     print_info("Fetching user repositories from: {}".format(user_url))
     repo_url = user_url + "?tab=repositories"
     r = session.get(repo_url)
