@@ -2,7 +2,7 @@
 
 ## Description
 
-GitSecrets is a python script to automate the searching of secrets in both Github and Github Enterprise environments. Often times organizaitons will manage source code through an internal Github Enterprise repository; however, in larger organizations searching through thousands of repos is unfeasible. This script aims to eliminate the overhead in searching through repositories manually.
+GitSecrets is a *Python 3* project to automate the searching of secrets in both Github and Github Enterprise environments. Often times organizaitons will manage source code through an internal Github Enterprise repository; however, in larger organizations searching through thousands of repos is unfeasible. This script aims to eliminate the overhead in searching through repositories manually.
 
 ## Modes
 
@@ -48,3 +48,21 @@ Options:
                         Outfile to write search results to. This is not used
                         when -u is passed. Default is "search_results.txt"
 ```
+
+## Examples
+
+### Searching Examples
+
+Search for ldap.conf files containing the "bindpw" string (defined in regexes.py) using the cookies.json file..
+
+- `python .\gitsecrets.py -g https://github.com -s "bindpw" -c .\cookies.json`
+
+Search all of Github for each query in regexes.py and write to all_results.txt
+
+- `python .\gitsecrets.py -g https://github.com -c .\cookies.json`
+
+### Cloning Examples
+
+Clone every repository from user djhohnstein and run trufflehog on each repo. Results will be in `trufflehog/djhohnstein/*.trufflehog`.
+
+- `python .\gitsecrets.py -g https://github.com -u djhohnstein -c .\cookies.json` 

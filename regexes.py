@@ -5,7 +5,7 @@ EQUALS_REGEX    = '[\ ]?[=\:\,\ ]{1}[\ ]?'
 PS_DECLARATION  = '[\(\ ]{1}[\$\"\']{1}'
 PS_VARIABLE     = '[\'\"\$]{1}'
 FILLER_REGEX    = JSON_REGEX + EQUALS_REGEX + JSON_REGEX
-PASSWORD_REGEX  = '[a-zA-Z0-9\@\-\.\!\?\\\/\$\=\^\%\(\)\*\&\#\~\`\'\"\[\]\_\+\<\>]+'
+PASSWORD_REGEX  = '[a-zA-Z0-9\@\-\.\!\?\\\/\$\=\^\%\(\)\*\&\#\~\`\'\"\[\]\_\+\<\>]{3,99}'
 DOMAIN_USER     = '[a-zA-Z0-9\.\@\_\\\%]+' # Need to add percentile to match batch variables.
 
 """
@@ -58,19 +58,7 @@ queries = [
         "path"        : "",
         "filename"    : "",
         "extension"   : "",
-        "flags"       : "",
-    },
-    # Another password configuration detail.
-    {
-        "search_term" : "LDAP_PASSWORD",
-        "regex"       : "(LDAP_PASSWORD" + FILLER_REGEX + PASSWORD_REGEX + ")",
-        "language"    : "",
-        "inpath"      : False,
-        "infile"      : False,
-        "path"        : "",
-        "filename"    : "",
-        "extension"   : "",
-        "flags"       : "",
+        "flags"       : re.IGNORECASE,
     },
     # Search for definitions of new PS Credentials. Useful for digging up configuration scripts.
     {
