@@ -40,13 +40,15 @@ Options:
   -s SEARCH, --search=SEARCH
                         Comma separated list of search terms from regexes.py
                         to search for. By default, searches all. Otherwise,
-                        can be one or more of: aws_secret_key, bindpw,
-                        ldap.password, LDAP_PASSWORD,
+                        can be one or more of: ConvertTo-SecureString, bindpw,
                         System.Management.Automation.PSCredential, net user,
-                        ConvertTo-SecureString
+                        aws_secret_key, ldap.password
+  --ssh                 If -u or --user is passed, will clone repositories
+                        over ssh instead of https.
   -o OUTFILE, --outfile=OUTFILE
                         Outfile to write search results to. This is not used
                         when -u is passed. Default is "search_results.txt"
+  -d, --debug           Turn on debug messages.
 ```
 
 ## Examples
@@ -55,7 +57,7 @@ Options:
 
 Search for ldap.conf files containing the "bindpw" string and "net user" batch/powershell files (defined in regexes.py) using the cookies.json file..
 
-- `python .\gitsecrets.py -g https://github.com -s "bindpw,net user" -c .\cookies.json`
+- `python .\gitsecrets.py -g https://github.com -s "bindpw,net user" -c .\cookies.json -d`
 
 ![Searching bindpw on github.com](https://i.imgur.com/krNltv4.png)
 
@@ -63,10 +65,10 @@ Search for ldap.conf files containing the "bindpw" string and "net user" batch/p
 
 Search all of Github for each query in regexes.py and write to all_results.txt
 
-- `python .\gitsecrets.py -g https://github.com -c .\cookies.json`
+- `python .\gitsecrets.py -g https://github.com -c .\cookies.json -d`
 
 ### Cloning Examples
 
 Clone every repository from user djhohnstein and run trufflehog on each repo. Results will be in `trufflehog/djhohnstein/*.trufflehog`.
 
-- `python .\gitsecrets.py -g https://github.com -u djhohnstein -c .\cookies.json` 
+- `python .\gitsecrets.py -g https://github.com -u djhohnstein -c .\cookies.json -o results.txt -d` 

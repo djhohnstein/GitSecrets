@@ -16,6 +16,8 @@ from regexes import queries
 max_threads = 1
 cur_threads = 0
 
+DEBUG=False
+
 def print_warning(content, color="yellow"):
     print(colored("[WARNING] {}".format(content), color))
 
@@ -29,7 +31,8 @@ def print_error(content, color="red"):
     print(colored("[ERROR] {}".format(content), color))
 
 def print_debug(content, color="blue"):
-    print(colored("[DEBUG] {}".format(content), color))
+    if DEBUG:
+        print(colored("[DEBUG] {}".format(content), color))
 
 def parse_repo_links(soup, base_url, ssh=False):
     """
@@ -439,10 +442,13 @@ def main():
     parser.add_option("-s", "--search", dest="search", default="all", help="Comma separated list of search terms from regexes.py to search for. By default, searches all. Otherwise, can be one or more of: {}".format(", ".join(list(set([x['search_term'] for x in queries])))))
     parser.add_option("--ssh", default=False, action="store_true", help="If -u or --user is passed, will clone repositories over ssh instead of https.") 
     parser.add_option("-o", "--outfile", dest="outfile", default="search_results.txt", help="Outfile to write search results to. This is not used when -u is passed. Default is \"search_results.txt\"")
+    parser.add_option("-d", "--debug", dest="debug", action="store_true", default=False, help="Turn on debug messages.")
     (options, args) = parser.parse_args()
     
     if not options.github_url:
         raise Exception("Require -g (--github_url) to be passed as a base URL to search from.")
+    global DEBUG
+    DEBUG = options.debug
     s = requests.Session()
     if options.cookies:
         jar = parse_cookie_file(options.cookies)
