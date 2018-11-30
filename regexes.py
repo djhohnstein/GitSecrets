@@ -96,6 +96,18 @@ queries = [
         "extension"   : "",
         "flags"       : re.IGNORECASE,
     },
+    # Catch the batch case as well.
+    {
+        "search_term" : "net user",
+        "regex"       : "(net(\.exe)? user(\ \/[adAD]{3})? " + DOMAIN_USER + " " + PASSWORD_REGEX + ")",
+        "language"    : "batch",
+        "inpath"      : False,
+        "infile"      : False,
+        "path"        : "",
+        "filename"    : "",
+        "extension"   : "",
+        "flags"       : re.IGNORECASE,
+    },
     # Search for secret strings being converted in plaintext
     {
         "search_term" : "ConvertTo-SecureString",

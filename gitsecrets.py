@@ -399,7 +399,7 @@ def crawl_github(base_url, session, query_list=queries, results_file = ""):
                 if max_len == 100:
                     print_warning("Excessive number of results (> 100 pages) returned for \"{}\".".format(query['search_term']))
                 else:
-                    print_info("{} page(s) of search results found for \"{}\".".format(max_len), query['search_term'])
+                    print_info("{} page(s) of search results found for \"{}\".".format(max_len, query['search_term']))
                 search_results = parse_code_page(query["search_term"], query["regex"], query["flags"], soup, base_url)
                 results[query["search_term"]] += search_results[query["search_term"]]
                 for i in range(2, max_len + 1):
@@ -414,7 +414,8 @@ def crawl_github(base_url, session, query_list=queries, results_file = ""):
                         print_error("Problem while iterating through search results: {}".format(e))
                  
         except Exception as e:
-            print_error("Problem occurred while cycling through regexes: {}".format(e))
+            # print_error("Problem occurred while cycling through regexes: {}".format(e))
+            raise e
     # print(results)
     noteworthy = False
     for k in results.keys():
@@ -429,7 +430,7 @@ def main():
     parser.add_option("-g", "--github_url", dest="github_url", help="URL of the Github server in quesiton.")
     parser.add_option("-c", "--cookies", dest="cookies", default="", help="Cookies file in JSON format.")
     parser.add_option("-u", "--user", dest="github_user", default="", help="User of repositories you wish to clone and run trufflehog on.")
-    parser.add_option("-s", "--search", dest="search", default="all", help="Comma separated list of search terms from regexes.py to search for. By default, searches all. Otherwise, can be one or more of: {}".format(", ".join([x['search_term'] for x in queries])))
+    parser.add_option("-s", "--search", dest="search", default="all", help="Comma separated list of search terms from regexes.py to search for. By default, searches all. Otherwise, can be one or more of: {}".format(", ".join(list(set([x['search_term'] for x in queries])))))
     parser.add_option("--ssh", default=False, action="store_true", help="If -u or --user is passed, will clone repositories over ssh instead of https.") 
     parser.add_option("-o", "--outfile", dest="outfile", default="search_results.txt", help="Outfile to write search results to. This is not used when -u is passed. Default is \"search_results.txt\"")
     (options, args) = parser.parse_args()
