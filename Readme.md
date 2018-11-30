@@ -4,6 +4,8 @@
 
 GitSecrets is a **Python 3** project to automate the searching of secrets in both Github and Github Enterprise environments. Often times organizaitons will manage source code through an internal Github Enterprise repository; however, in larger organizations searching through thousands of repos is unfeasible. This script aims to eliminate the overhead in searching through repositories manually.
 
+NOTE: You will need to export your session cookies to a JSON file for the script to read. Otherwise, you won't be able to connect to and search the remote Github instance.
+
 ## Modes
 
 Currently the main script contains only two modes:
