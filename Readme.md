@@ -2,7 +2,7 @@
 
 ## Description
 
-GitSecrets is a *Python 3* project to automate the searching of secrets in both Github and Github Enterprise environments. Often times organizaitons will manage source code through an internal Github Enterprise repository; however, in larger organizations searching through thousands of repos is unfeasible. This script aims to eliminate the overhead in searching through repositories manually.
+GitSecrets is a **Python 3** project to automate the searching of secrets in both Github and Github Enterprise environments. Often times organizaitons will manage source code through an internal Github Enterprise repository; however, in larger organizations searching through thousands of repos is unfeasible. This script aims to eliminate the overhead in searching through repositories manually.
 
 ## Modes
 
