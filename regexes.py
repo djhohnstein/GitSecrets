@@ -75,7 +75,7 @@ queries = [
     # Search for definitions of new PS Credentials. Useful for digging up configuration scripts.
     {
         "search_term" : "System.Management.Automation.PSCredential",
-        "regex"       : "(New-Object System.Management.Automation.PSCredential" + PS_DECLARATION + ".*$)",
+        "regex"       : "(New-Object.*System.Management.Automation.PSCredential.*$)",
         "language"    : "powershell",
         "inpath"      : False,
         "infile"      : False,

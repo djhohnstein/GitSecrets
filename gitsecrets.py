@@ -180,13 +180,29 @@ def strip_tags(content):
     """
     tags = [
         "<em>",
-        "</em>",
-        "<span>",
-        "</span>",
-        "<span class=\"pl-pse\">",
+        "</em>"
     ]
     for tag in tags:
         content = content.replace(tag, "")
+    # kill all spans with classes
+    spans = re.findall("<span[\ \=\"a-zA-Z0-9\-\.]+>", content)
+    # print_debug("Removing spans: {}".format(spans))
+    for span in spans:
+        content = content.replace(span, "")
+    tds = re.findall("<td[a-zA-Z\ \-\.\=0-9\"]+>", content)
+    # print_debug("Removing tds: {}".format(tds))
+    for td in tds:
+        content = content.replace(td, "")
+    trs = re.findall("<td[a-zA-Z\ \-\.=0-9\"]+>", content)
+    # print_debug("Removing trs: {}".format(trs))
+    for tr in trs:
+        content = content.replace(tr, "")
+    ending_tags = re.findall("<\/[a-z]+>", content)
+    # print_debug("Removing ending tags: {}".format(ending_tags))
+
+    for tag in ending_tags:
+        content = content.replace(tag, "")
+    
     return content
 
 
@@ -373,33 +389,39 @@ def crawl_github(base_url, session, query_list=queries, results_file = ""):
         try:
             print_debug("Fetching {}".format(search_url.format(1)))
             r = session.get(search_url.format(1))
-            soup = BeautifulSoup(r.content, 'html.parser')
-            with open(query["search_term"] + ".html", "wb") as f:
-                f.write(r.content)
-            max_len = max_pages(soup)
-            if max_len == 100:
-                print_warning("Excessive number of results (> 100 pages) returned for \"{}\".".format(query['search_term']))
+            if "Sign in to GitHub" in r.content.decode():
+                print_error("Authentication required to search code on Github. Please pass an updated cookie file with -c and try again.")
             else:
-                print_info("{} of search results found for \"{}\".".format(colored("[+] {} pages".format(max_len), "green"), query['search_term']))
-            search_results = parse_code_page(query["search_term"], query["regex"], query["flags"], soup, base_url)
-            results[query["search_term"]] += search_results[query["search_term"]]
-            for i in range(2, max_len + 1):
-                print_debug("On page: {}".format(i))
-                try:
-                    url = search_url.format(i)
-                    r = session.get(url)
-                    soup = BeautifulSoup(r.content, 'html.parser')
-                    search_results = parse_code_page(query["search_term"], query["regex"], query['flags'], soup, base_url)
-                    results[query["search_term"]] += search_results[query["search_term"]]
-                except Exception as e:
-                    print_error("Problem while iterating through search results: {}".format(e))
-             
+                soup = BeautifulSoup(r.content, 'html.parser')
+                with open(query["search_term"] + ".html", "wb") as f:
+                    f.write(r.content)
+                max_len = max_pages(soup)
+                if max_len == 100:
+                    print_warning("Excessive number of results (> 100 pages) returned for \"{}\".".format(query['search_term']))
+                else:
+                    print_info("{} page(s) of search results found for \"{}\".".format(max_len), query['search_term'])
+                search_results = parse_code_page(query["search_term"], query["regex"], query["flags"], soup, base_url)
+                results[query["search_term"]] += search_results[query["search_term"]]
+                for i in range(2, max_len + 1):
+                    print_debug("On page: {}".format(i))
+                    try:
+                        url = search_url.format(i)
+                        r = session.get(url)
+                        soup = BeautifulSoup(r.content, 'html.parser')
+                        search_results = parse_code_page(query["search_term"], query["regex"], query['flags'], soup, base_url)
+                        results[query["search_term"]] += search_results[query["search_term"]]
+                    except Exception as e:
+                        print_error("Problem while iterating through search results: {}".format(e))
+                 
         except Exception as e:
             print_error("Problem occurred while cycling through regexes: {}".format(e))
     # print(results)
+    noteworthy = False
     for k in results.keys():
-        print_success("Found {} {}s".format(len(results[k]), k))
-    if results_file:
+        if len(results[k]):
+            noteworthy = True
+            print_success("Found {} {}s".format(len(results[k]), k))
+    if results_file and noteworthy:
         write_results(results, results_file)
 
 def main():
