@@ -180,10 +180,16 @@ def strip_tags(content):
     """
     tags = [
         "<em>",
-        "</em>"
+        "</em>",
     ]
+    htmlEncodings = {
+        "&lt;": "<",
+        "&gt;": ">",
+    }
     for tag in tags:
         content = content.replace(tag, "")
+    for k, v in htmlEncodings.items():
+        content = content.replace(k, v)
     # kill all spans with classes
     spans = re.findall("<span[\ \=\"a-zA-Z0-9\-\.]+>", content)
     # print_debug("Removing spans: {}".format(spans))
@@ -464,7 +470,7 @@ def main():
             choices = [x.strip() for x in options.search.split(",")]
             query_list = [x for x in queries if x['search_term'] in choices]
             if query_list:
-                print_info("Searching for key-word phrases: {}".format(",".join([x['search_term'] for x in query_list])))
+                print_info("Searching for key-word phrases: {}".format(",".join(list(set([x['search_term'] for x in query_list])))))
                 crawl_github(base_url, s, query_list, options.outfile)
             else:
                 print_error("[ERROR] Could not parse any choices from the list you provided. Please see the help menu for valid choices.")

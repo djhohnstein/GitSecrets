@@ -53,9 +53,13 @@ Options:
 
 ### Searching Examples
 
-Search for ldap.conf files containing the "bindpw" string (defined in regexes.py) using the cookies.json file..
+Search for ldap.conf files containing the "bindpw" string and "net user" batch/powershell files (defined in regexes.py) using the cookies.json file..
 
-- `python .\gitsecrets.py -g https://github.com -s "bindpw" -c .\cookies.json`
+- `python .\gitsecrets.py -g https://github.com -s "bindpw,net user" -c .\cookies.json`
+
+![Searching bindpw on github.com](https://i.imgur.com/krNltv4.png)
+
+![Searching for "net user" in PowerShell files](https://i.imgur.com/zcGEmjT.png)
 
 Search all of Github for each query in regexes.py and write to all_results.txt
 
